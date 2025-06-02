@@ -27,5 +27,6 @@ docker-compose.yml: Orchestrates the Docker containers and manages the model dow
 Main project code: Runs Semantic Kernel using the local model inside Docker.
 
 #Notes
+
 Ensure Docker Desktop is updated and the required TCP support is enabled before starting.
 If you encounter issues with model downloads or network configuration, check your Docker Desktop settings and internet connectivity.
