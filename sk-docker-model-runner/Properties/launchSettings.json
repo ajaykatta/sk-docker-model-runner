@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "sk-docker-model-runner": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+services:
+ sk-docker-model-runner:
+    image: ${DOCKER_REGISTRY-}skdockermodelrunner
+    build:
+      context: .
+      dockerfile: sk-docker-model-runner/Dockerfile
+    stdin_open: true
+    tty: true
+    depends_on:
+      - gemma
+      - phi
+
+ gemma:
+    provider:
+      type: model
+      options:
+        model: ai/gemma3
+
+ phi:
+    provider:
+      type: model
+      options:
+        model: ai/phi4
