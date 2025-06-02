@@ -4,18 +4,19 @@ This is a sample project to run .NET Semantic Kernel with local models using a D
 
 #Requirements
 
-Docker Desktop version 4.40 or above
-In Docker Desktop, enable "Host-side TCP support" in the Models tab
+Docker Desktop version 4.40 or above.
+
+In Docker Desktop, enable "Host-side TCP support" in the Models tab.
 
 #Getting Started
 
-Clone this repository
+Clone this repository.
 
 #bash
 
 git clone https://github.com/ajaykatta/sk-docker-model-runner.git
 cd sk-docker-model-runner
-Start the Docker containers
+Start the Docker containers.
 
 #Run the Semantic Kernel sample
 
