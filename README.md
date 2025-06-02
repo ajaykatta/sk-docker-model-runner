@@ -1,4 +1,4 @@
-sk-docker-model-runner
+#sk-docker-model-runner
 This is a sample project to run .NET Semantic Kernel with local models using a Docker model runner. It includes a docker-compose file to help download the required model if it is not already available.
 
 Requirements
