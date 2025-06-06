@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using ModelContextProtocol.Client;
 using sk_docker_model_runner.plugins;
 
 Console.WriteLine("Welcome to the Semantic Kernel Docker Model Runner!");
@@ -14,15 +15,38 @@ builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(Lo
 
 var kernel = builder.Build();
 
+// Create an MCPClient for the GitHub server
+await using IMcpClient mcpClient = await McpClientFactory.CreateAsync(new StdioClientTransport(new()
+{
+    Name = "GitHub",
+    Command = "npx",
+    Arguments = ["-y", "@modelcontextprotocol/server-github"],
+}));
+
+// Retrieve the list of tools available on the GitHub server
+var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
+foreach (var tool in tools)
+{
+    Console.WriteLine($"{tool.Name}: {tool.Description}");
+}
+
 var chatCompletionService = kernel.Services.GetRequiredService<IChatCompletionService>();
 
 kernel.Plugins.AddFromType<LightsPlugin>("Lights");
 kernel.Plugins.AddFromType<FansPlugin>("Fans");
 
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+kernel.Plugins.AddFromFunctions("GitHub", tools.TakeLast(2).Select(aiFunction => aiFunction.AsKernelFunction()));
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
 {
-    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+    //FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+    Temperature = 0,
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
 };
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var history = new ChatHistory();
 
