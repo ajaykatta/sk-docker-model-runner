@@ -4,7 +4,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 using sk_docker_model_runner.plugins;
+using System.Reflection;
 
 Console.WriteLine("Welcome to the Semantic Kernel Docker Model Runner!");
 var builder = Kernel.CreateBuilder();
@@ -14,39 +17,39 @@ builder.AddOpenAIChatCompletion(modelId: "ai/gemma3", endpoint: new Uri("http://
 builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Warning));
 
 var kernel = builder.Build();
+string baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 
-// Create an MCPClient for the GitHub server
-await using IMcpClient mcpClient = await McpClientFactory.CreateAsync(new StdioClientTransport(new()
-{
-    Name = "GitHub",
-    Command = "npx",
-    Arguments = ["-y", "@modelcontextprotocol/server-github"],
-}));
+string path = Path.Combine(baseDir, "sk-docker-model-runner.dll");
 
-// Retrieve the list of tools available on the GitHub server
-var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
-foreach (var tool in tools)
-{
-    Console.WriteLine($"{tool.Name}: {tool.Description}");
-}
+// Run your MCP server as a subprocess or standalone console app
+  await using var mcpClient = await McpClientFactory.CreateAsync(
+    new StdioClientTransport(new()
+    {
+        Name = "MyEchoServer",
+        Command = "dotnet",
+        Arguments = new[] { path }
+    }));
 
 var chatCompletionService = kernel.Services.GetRequiredService<IChatCompletionService>();
 
 kernel.Plugins.AddFromType<LightsPlugin>("Lights");
 kernel.Plugins.AddFromType<FansPlugin>("Fans");
 
-#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-kernel.Plugins.AddFromFunctions("GitHub", tools.TakeLast(2).Select(aiFunction => aiFunction.AsKernelFunction()));
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+var tools = await mcpClient.ListToolsAsync();
+
+foreach (var toolType in tools)
+{
+    Console.WriteLine(toolType);
+}
 
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+kernel.Plugins.AddFromFunctions("MyEcho", tools.Select(t => t.AsKernelFunction()));
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
 {
-    //FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-    Temperature = 0,
-    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
 };
-#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var history = new ChatHistory();
 
