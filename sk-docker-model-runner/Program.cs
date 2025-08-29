@@ -51,11 +51,6 @@ do
             executionSettings: openAIPromptExecutionSettings,
             kernel: kernel);
     }
-    catch (HttpRequestException ex) when (ex.Message.Contains("429"))
-    {
-        Console.WriteLine("Assistant > Too many requests (HTTP 429). Please wait and try again later.");
-        continue;
-    }
     catch (HttpRequestException ex)
     {
         Console.WriteLine($"Assistant > HttpRequestException error occurred: {ex.Message}");
