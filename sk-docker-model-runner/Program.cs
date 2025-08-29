@@ -50,17 +50,7 @@ do
             history,
             executionSettings: openAIPromptExecutionSettings,
             kernel: kernel);
-    }
-    catch (HttpRequestException ex)
-    {
-        Console.WriteLine($"Assistant > HttpRequestException error occurred: {ex.Message}");
-        continue;
-    }
-    catch (TaskCanceledException ex)
-    {
-        Console.WriteLine($"Assistant > The request timed out. Please try again. {ex.Message}");
-        continue;
-    }
+    } 
     catch (Exception ex)
     {
         Console.WriteLine($"Assistant > An error occurred: {ex.Message}");
