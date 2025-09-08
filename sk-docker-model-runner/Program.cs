@@ -56,6 +56,16 @@ do
         Console.WriteLine("Assistant > Too many requests (HTTP 429). Please wait and try again later.");
         continue;
     }
+    catch (TaskCanceledException ex)
+    {
+        Console.WriteLine($"Assistant > The request timed out. Please try again. {ex.Message}");
+        continue;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Assistant > An error occurred: {ex.Message}");
+        continue;
+    }
 
     // Print the results
     Console.WriteLine("Assistant > " + result);
